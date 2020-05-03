@@ -5,7 +5,8 @@ import { on as applicationOn, uncaughtErrorEvent, UnhandledErrorEventData } from
 import {
     LocationBase,
     defaultGetLocationTimeout,
-    minRangeUpdate
+    minRangeUpdate,
+    CircularRegion
 } from "./geolocation.common";
 import {
     Options,
@@ -94,6 +95,12 @@ class LocationListenerImpl extends NSObject implements CLLocationManagerDelegate
             default:
                 break;
         }
+    }
+
+    public locationManagerDidEnterRegion(manager: CLLocationManager, region: CLRegion) {
+
+
+
     }
 }
 
@@ -401,4 +408,40 @@ export function setCustomLocationManager(manager) {
 
 export class Location extends LocationBase {
     public ios: CLLocation;      // iOS native location
+}
+
+
+export function startMonitoringRegion(region: CircularRegion, successCallback: successCallbackType,
+    errorCallback: errorCallbackType,
+    options: Options): number {
+    if (!attachedForErrorHandling) {
+        attachedForErrorHandling = true;
+        applicationOn(uncaughtErrorEvent, errorHandler.bind(this));
+    }
+
+    let zonedSuccessCallback = (<any>global).zonedCallback(successCallback);
+    let zonedErrorCallback = (<any>global).zonedCallback(errorCallback);
+    let locListener = LocationListenerImpl.initWithLocationError(zonedSuccessCallback, zonedErrorCallback);
+
+    let regionCenter: CLLocationCoordinate2D = {
+        latitude: region.latitude,
+        longitude: region.longitude
+    }
+    let circularRegion = new CLCircularRegion({
+        center: regionCenter,
+        radius: region.radius,
+        identifier: region.identifier
+    })
+    circularRegion.notifyOnEntry = region.notifiyOnEntry;
+    circularRegion.notifyOnExit = region.notifyOnExit;
+
+    try {
+        let iosLocManager = getIOSLocationManager(locListener, options);
+        iosLocManager.startMonitoringForRegion(circularRegion);
+        return locListener.id;
+    } catch (e) {
+        LocationMonitor.stopLocationMonitoring(locListener.id);
+        zonedErrorCallback(e);
+        return null;
+    }
 }

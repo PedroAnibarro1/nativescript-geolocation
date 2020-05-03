@@ -1,4 +1,5 @@
 import { Location as LocationDef } from "./location";
+import { CircularRegion as RegionDef } from "./circularRegion";
 
 export class LocationBase implements LocationDef {
   public latitude: number;
@@ -15,3 +16,12 @@ export const defaultGetLocationTimeout = 5 * 60 * 1000; // 5 minutes
 export const minRangeUpdate = 0.1; // 0 meters
 export const minTimeUpdate = 1 * 60 * 1000; // 1 minute
 export const fastestTimeUpdate = 5 * 1000; // 5 secs
+
+export class CircularRegion implements RegionDef {
+  public latitude: number;
+  public longitude: number;
+  public radius: number;
+  public identifier: string;
+  public notifyOnEntry: boolean;
+  public notifyOnExit: boolean;
+}
