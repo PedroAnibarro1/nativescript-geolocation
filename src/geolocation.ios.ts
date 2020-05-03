@@ -432,7 +432,7 @@ export function startMonitoringRegion(region: CircularRegion, successCallback: s
         radius: region.radius,
         identifier: region.identifier
     })
-    circularRegion.notifyOnEntry = region.notifiyOnEntry;
+    circularRegion.notifyOnEntry = region.notifyOnEntry;
     circularRegion.notifyOnExit = region.notifyOnExit;
 
     try {
